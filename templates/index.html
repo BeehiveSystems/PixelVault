@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelVault - Simple Image Hosting</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="#" class="logo">PixelVault</a>
+                <div class="nav-links">
+                    <!--<a href="#">Home</a>
+                    <a href="#">Gallery</a>
+		    <a href="#">About</a>-->
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="upload-section">
+                <h1>Simple, Fast Image Hosting</h1>
+                <p>Upload and share your images with ease</p>
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <input type="file" name="image" accept="image/*" required>
+                    <button type="submit" class="upload-button">Upload Image</button>
+                </form>
+            </section>
+
+            <section class="gallery" id="gallery">
+                {% for image in images %}
+                <div class="image-card" data-filename="{{ image['filename'] }}">
+                    <img src="{{ url_for('get_thumbnail', filename=image['filename'].rsplit('.', 1)[0] + '.jpg') }}" alt="{{ image['filename'] }}">
+                    <div class="image-info">
+                        <h3 class="image-title">{{ image['filename'] }}</h3>
+                        <p class="image-size">{{ image['size'] }} MB</p>
+                    </div>
+                    <button class="delete-button">Delete</button>
+                    <button class="copy-link-button" data-url="{{ url_for('uploaded_file', filename=image['filename']) }}">Copy Link</button>
+                </div>
+                {% endfor %}
+            </section>
+
+
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 PixelVault. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

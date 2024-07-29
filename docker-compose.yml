@@ -1,0 +1,13 @@
+version: '3'
+services:
+  pixelvault:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data/uploads:/usr/src/app/uploads
+      - ./data/thumbnails:/usr/src/app/thumbnails
+      - ./data/database:/usr/src/app/database
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=/usr/src/app/database/database.db
