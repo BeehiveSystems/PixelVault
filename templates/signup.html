@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelVault - Sign Up</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <div class="signup-container">
+    <div class="logo">PixelVault</div>
+    <form class="signup-form" id="signup-form" method="POST" action="{{ url_for('signup') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+        <div class="error-message" id="password-error"></div>
+      </div>
+      <div class="form-group">
+        <label for="confirm-password">Confirm Password</label>
+        <input type="password" id="confirm-password" name="confirm-password" required>
+        <div class="error-message" id="confirm-password-error"></div>
+      </div>
+      <button type="submit" class="signup-button">Sign Up</button>
+    </form>
+    <div class="login-link">
+      Already have an account? <a href="{{ url_for('login') }}">Log in</a>
+    </div>
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const signupForm = document.getElementById("signup-form");
+
+        signupForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+            const formData = new FormData(signupForm);
+
+            fetch(signupForm.action, {
+                method: "POST",
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect || '/login';
+                } else {
+                    alert(data.message || "Error signing up.");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        });
+    });
+  </script>
+</body>
+</html>

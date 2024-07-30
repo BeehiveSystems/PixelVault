@@ -3,6 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelVault - Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">PixelVault</div>
+        <form class="login-form" id="login-form" method="POST" action="{{ url_for('login') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="login-button">Log In</button>
+        </form>
+        <div class="forgot-password">
+            <a href="#">Forgot password?</a>
+        </div>
+        <div class="signup-link">
+            Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a>
+        </div>
+    </div>
+</body>
+</html>
+[root@docker1 templates]# clear
+[root@docker1 templates]# cat index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>PixelVault - Simple Image Hosting</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
@@ -12,9 +47,7 @@
             <nav>
                 <a href="#" class="logo">PixelVault</a>
                 <div class="nav-links">
-                    <!--<a href="#">Home</a>
-                    <a href="#">Gallery</a>
-		    <a href="#">About</a>-->
+                    <!-- Additional navigation links can go here -->
                 </div>
             </nav>
         </div>
@@ -26,6 +59,7 @@
                 <h1>Simple, Fast Image Hosting</h1>
                 <p>Upload and share your images with ease</p>
                 <form id="uploadForm" enctype="multipart/form-data">
+		    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="file" name="image" accept="image/*" required>
                     <button type="submit" class="upload-button">Upload Image</button>
                 </form>
@@ -44,8 +78,6 @@
                 </div>
                 {% endfor %}
             </section>
-
-
         </div>
     </main>
 

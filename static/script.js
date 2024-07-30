@@ -1,24 +1,37 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // Image upload functionality
     const uploadForm = document.getElementById("uploadForm");
 
-    uploadForm.addEventListener("submit", function (event) {
-        event.preventDefault();
-        const formData = new FormData(uploadForm);
-
-        fetch("/upload", {
-            method: "POST",
-            body: formData,
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                addImageToGallery(data.url, data.url.split('/').pop());
-            } else {
-                alert("Error uploading image.");
-            }
-        })
-        .catch(error => console.error("Error:", error));
-    });
+    if (uploadForm) {
+        uploadForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+            const formData = new FormData(uploadForm);
+            fetch("/upload", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": formData.get('csrf_token')
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    addImageToGallery(data.url, data.url.split('/').pop());
+                } else {
+                    alert(data.message || "Error uploading image.");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert(error.message || "An error occurred while uploading the image.");
+            });
+        });
+    }
 
     function addImageToGallery(imageUrl, filename) {
         const gallery = document.getElementById("gallery");
@@ -60,10 +73,19 @@ document.addEventListener("DOMContentLoaded", function () {
             const filename = imageCard.getAttribute("data-filename");
 
             if (confirm(`Are you sure you want to delete '${filename}'?`)) {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                 fetch(`/delete/${filename}`, {
                     method: "DELETE",
+                    headers: {
+                        "X-CSRFToken": csrfToken
+                    }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text); });
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         imageCard.remove();
@@ -88,4 +110,36 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     });
+
+    // Signup functionality
+    const signupForm = document.getElementById("signup-form");
+
+    if (signupForm) {
+        signupForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+            const formData = new FormData(signupForm);
+
+            fetch(signupForm.action, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": formData.get('csrf_token')
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect || '/login';
+                } else {
+                    alert(data.message || "Error signing up.");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        });
+    }
 });
