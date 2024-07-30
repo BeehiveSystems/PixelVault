@@ -14,7 +14,7 @@
                 <a href="#" class="logo">PixelVault</a>
                 <div class="nav-links">
                     <!-- Additional navigation links can go here -->
-		    <a href="{{ url_for('logout') }}">Log Out</a>
+                    <a href="{{ url_for('logout') }}">Log Out</a>
                 </div>
             </nav>
         </div>
@@ -26,9 +26,12 @@
                 <h1>Simple, Fast Image Hosting</h1>
                 <p>Upload and share your images with ease</p>
                 <form id="uploadForm" enctype="multipart/form-data">
-		    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="file" name="image" accept="image/*" required>
-                    <button type="submit" class="upload-button">Upload Image</button>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <label class="custom-file-upload">
+                        <input type="file" name="image" accept="image/*" multiple required>
+                        Choose Files
+                    </label>
+                    <button type="submit" class="upload-button">Upload Images</button>
                 </form>
             </section>
 
@@ -57,3 +60,4 @@
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
+

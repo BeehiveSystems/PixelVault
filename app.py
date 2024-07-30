@@ -7,6 +7,7 @@ import re
 import sqlite3
 from werkzeug.utils import secure_filename
 from PIL import Image
+import uuid
 # Debug
 import traceback
 
@@ -28,7 +29,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-BASE_URL = os.getenv('BASE_URL', 'http://localhost:5000')
+#BASE_URL = os.getenv('BASE_URL', 'http://localhost:5000')
 
 DATABASE_PATH = os.getenv('DATABASE_URL')
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -65,7 +66,7 @@ def load_user(user_id):
 def init_db():
     with sqlite3.connect(DATABASE_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute('DROP TABLE IF EXISTS users')  # Only for development
+#        cursor.execute('DROP TABLE IF EXISTS users')  # Only for development
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -197,44 +198,49 @@ def upload_file():
             print("No file part in request")  # Debug print
             return jsonify(success=False, message="No file part"), 400
 
-        file = request.files['image']
-        print(f"File received: {file.filename}")  # Debug print
+        files = request.files.getlist('image')
+        urls = []
 
-        if file.filename == '':
-            print("No selected file")  # Debug print
-            return jsonify(success=False, message="No selected file"), 400
+        for file in files:
+            print(f"File received: {file.filename}")  # Debug print
 
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        print(f"Saving file to: {filepath}")  # Debug print
+            if file.filename == '':
+                print("No selected file")  # Debug print
+                return jsonify(success=False, message="No selected file"), 400
 
-        file.save(filepath)
-        print("File saved successfully")  # Debug print
+            # Generate a randomized filename
+            random_filename = str(uuid.uuid4().hex[:12]) + os.path.splitext(file.filename)[1]
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], random_filename)
+            print(f"Saving file to: {filepath}")  # Debug print
 
-        # Generate and save thumbnail
-        create_thumbnail(filepath, filename)
-        print("Thumbnail created")  # Debug print
+            file.save(filepath)
+            print("File saved successfully")  # Debug print
 
-        # Store image data in the database
-        with sqlite3.connect(DATABASE_PATH) as conn:
-            cursor = conn.cursor()
-            cursor.execute('INSERT INTO images (filename, user_id) VALUES (?, ?)', (filename, current_user.id))
-            conn.commit()
-        print("Database entry created")  # Debug print
+            # Generate and save thumbnail
+            create_thumbnail(filepath, random_filename)
+            print("Thumbnail created")  # Debug print
 
-        # Use BASE_URL to construct the full URL
-        BASE_URL = os.getenv('BASE_URL', 'http://localhost:5000')
-        file_url = f"{BASE_URL}/uploads/{filename}"
+            # Store image data in the database
+            with sqlite3.connect(DATABASE_PATH) as conn:
+                cursor = conn.cursor()
+                cursor.execute('INSERT INTO images (filename, user_id) VALUES (?, ?)', (random_filename, current_user.id))
+                conn.commit()
+            print("Database entry created")  # Debug print
 
-        return jsonify(success=True, url=file_url)
+            # Construct the full URL
+            BASE_URL = os.getenv('BASE_URL', 'http://localhost:5000')
+            file_url = f"{BASE_URL}/uploads/{random_filename}"
+            urls.append(file_url)
+
+        return jsonify(success=True, urls=urls)
     except Exception as e:
         print(f"Error during file upload: {str(e)}")  # Log the error
-        return jsonify(success=False, message=str(e)), 500
+        print(traceback.format_exc())  # Print the full stack trace for debugging
+        return jsonify(success=False, message="An error occurred"), 500
 
 
 
-
-def create_thumbnail(filepath, filename):
+def create_thumbnail(filepath, random_filename):
     try:
         img = Image.open(filepath)
         img.thumbnail((200, 200))
@@ -244,7 +250,7 @@ def create_thumbnail(filepath, filename):
             img = img.convert('RGB')
 
         # Save thumbnail in JPEG format
-        base, _ = os.path.splitext(filename)
+        base, _ = os.path.splitext(random_filename)
         thumbnail_filename = f"{base}.jpg"
         thumbnail_path = os.path.join(app.config['THUMBNAIL_FOLDER'], thumbnail_filename)
         img.save(thumbnail_path, "JPEG")
@@ -302,3 +308,4 @@ if __name__ == '__main__':
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     os.makedirs(app.config['THUMBNAIL_FOLDER'], exist_ok=True)
     app.run(debug=True, host='0.0.0.0', port=5000)
+

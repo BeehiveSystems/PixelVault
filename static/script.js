@@ -5,31 +5,31 @@ document.addEventListener("DOMContentLoaded", function () {
     if (uploadForm) {
         uploadForm.addEventListener("submit", function (event) {
             event.preventDefault();
-            const formData = new FormData(uploadForm);
+            const files = uploadForm.querySelector('input[type="file"]').files;
+            const formData = new FormData();
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            for (const file of files) {
+                formData.append("image", file);
+            }
+            formData.append("csrf_token", csrfToken); // Append CSRF token to formData
+
             fetch("/upload", {
                 method: "POST",
                 body: formData,
                 headers: {
-                    "X-CSRFToken": formData.get('csrf_token')
+                    "X-CSRFToken": csrfToken // Include CSRF token in the headers if needed
                 }
             })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text); });
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    addImageToGallery(data.url, data.url.split('/').pop());
+                    data.urls.forEach(url => addImageToGallery(url, url.split('/').pop()));
                 } else {
-                    alert(data.message || "Error uploading image.");
+                    alert("Error uploading images.");
                 }
             })
-            .catch(error => {
-                console.error("Error:", error);
-                alert(error.message || "An error occurred while uploading the image.");
-            });
+            .catch(error => console.error("Error:", error));
         });
     }
 
@@ -143,3 +143,4 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
+

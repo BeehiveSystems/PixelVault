@@ -76,30 +76,43 @@ main {
   box-shadow: var(--box-shadow);
   text-align: center;
   margin-bottom: 2rem;
+  margin-top: 1rem;
   max-width: 600px;
   margin: 0 auto;
 }
 
-.upload-button {
+/* Custom file upload button and upload button styling */
+.upload-button,
+.custom-file-upload {
   display: inline-block;
   background-color: var(--primary-color);
   color: #fff;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 2rem; /* Adjust padding for width */
   border: none;
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  margin-top: 1rem; /* Prevent button from touching text */
+  margin-right: 10px; /* Add some space between buttons */
+  height: 100%; /* Ensure the buttons have the same height */
+  line-height: 1.5; /* Ensure the text is vertically centered */
 }
 
-.upload-button:hover {
+.upload-button:hover,
+.custom-file-upload:hover {
   background-color: #2980b9;
+}
+
+.custom-file-upload input[type="file"] {
+  display: none; /* Hide the actual file input */
 }
 
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1rem;
+  margin-top: 2rem;
 }
 
 .image-card {
@@ -269,3 +282,4 @@ a:hover {
   font-size: 0.875rem;
   margin-top: 0.25rem;
 }
+
