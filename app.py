@@ -28,6 +28,8 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+BASE_URL = os.getenv('BASE_URL', 'http://localhost:5000')
+
 DATABASE_PATH = os.getenv('DATABASE_URL')
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['THUMBNAIL_FOLDER'] = 'thumbnails'
@@ -220,11 +222,17 @@ def upload_file():
             conn.commit()
         print("Database entry created")  # Debug print
 
-        return jsonify(success=True, url=f'/uploads/{filename}')
+        # Use BASE_URL to construct the full URL
+        BASE_URL = os.getenv('BASE_URL', 'http://localhost:5000')
+        file_url = f"{BASE_URL}/uploads/{filename}"
+
+        return jsonify(success=True, url=file_url)
     except Exception as e:
         print(f"Error during file upload: {str(e)}")  # Log the error
-        print(traceback.format_exc())  # Print the full stack trace
         return jsonify(success=False, message=str(e)), 500
+
+
+
 
 def create_thumbnail(filepath, filename):
     try:

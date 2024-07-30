@@ -11,3 +11,4 @@ services:
     environment:
       - FLASK_ENV=development
       - DATABASE_URL=/usr/src/app/database/database.db
+      - BASE_URL= # Enter your URL here
